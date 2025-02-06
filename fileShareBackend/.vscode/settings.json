@@ -1,0 +1,24 @@
+{
+  "python.terminal.activateEnvironment": true,
+
+  "terminal.integrated.profiles.windows": {
+    "PowerShell": {
+      "path": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+      "args": [
+        "-ExecutionPolicy",
+        "Bypass",
+        "-NoExit",
+        "-Command",
+        "& '../venv/Scripts/Activate.ps1'"
+      ]
+    },
+    "Command Prompt": {
+      "path": "C:\\WINDOWS\\System32\\cmd.exe",
+      "args": ["/K", "..\\venv\\Scripts\\activate"]
+    },
+    "Git Bash": {
+      "path": "C:\\Program Files\\Git\\bin\\bash.exe",
+      "args": ["-c", "-i", "source ../venv/bin/activate; bash"]
+    }
+  }
+}

@@ -1,0 +1,9 @@
+services:
+  django-run:
+    image: django
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    container_name: django
+    ports:
+      - '8000:8000'

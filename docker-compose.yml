@@ -1,0 +1,19 @@
+services:
+  vite-run:
+    image: vite
+    build:
+      context: ./fileShareFrontend
+      dockerfile: ./Dockerfile
+    environment:
+      NODE_ENV: production
+    ports:
+      - 3000:3000
+
+  django-run:
+    image: django
+    build:
+      context: ./fileShareBackend
+      dockerfile: ./Dockerfile
+    container_name: django
+    ports:
+      - '8000:8000'
