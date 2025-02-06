@@ -5,13 +5,13 @@ This repository contains two separate projects that together form a file sharing
 - **fileShareBackend** – A Django REST Framework application that handles user registration, login (with MFA and JWT cookie‑based authentication), file upload (with AES‑256-GCM encryption), file retrieval (with decryption), public link generation, file sharing, and admin panel endpoints.
 - **fileShareFrontend** – A Vite/React 18 application that provides the user interface for file upload, decryption, file sharing, and admin panel functionality.
 
-Both projects are configured to run over HTTPS using your provided certificate (`cert.pem`) and key (`key.pem`) files.
+Both projects are configured to run over HTTPS using (`cert.pem`) and key (`key.pem`) files.
 
 ### Clear port 3000 cookies before running the app
 
-### IF any errors or empty screen reload the page
+### IF any errors or empty screen, reload the page
 
-#### Accessing django admin username:admin password:root
+#### Accessing django admin username:admin; password:root;
 
 ## Features
 
