@@ -9,7 +9,7 @@ Both projects are configured to run over HTTPS using (`cert.pem`) and key (`key.
 
 ### Clear port 3000 cookies before running the app
 
-### Due to time constraint only PDF view available in the browser, but the implementation is valid for all files
+### Due to time constraint only PDF view available in the browser, but the encryption implementation is valid for all files
 
 ### IF any errors or empty screen, reload the page
 
