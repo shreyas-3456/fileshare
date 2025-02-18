@@ -6,6 +6,7 @@ This repository contains two separate projects that together form a file sharing
 - **fileShareFrontend** – A Vite/React 18 application that provides the user interface for file upload, decryption, file sharing, and admin panel functionality.
 
 Both projects are configured to run over HTTPS using (`cert.pem`) and key (`key.pem`) files.
+### Due to time constraint only PDF view available in the browser, but the encryption implementation is valid for all files
 
 ### Clear port 3000 cookies before running the app
 
