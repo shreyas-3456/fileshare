@@ -4,6 +4,17 @@ import axios from 'axios'
 import { Document, Page, pdfjs } from 'react-pdf'
 import 'react-pdf/dist/Page/TextLayer.css'
 import 'react-pdf/dist/Page/AnnotationLayer.css'
+import {
+  Container,
+  Paper,
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Stack,
+  CircularProgress,
+} from '@mui/material'
+import LayoutWrapper from '../components/LayoutWrapper'
 
 // Set up PDF worker
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
@@ -44,16 +55,9 @@ async function decryptFile(
   ivBase64,
   mimeType = 'application/pdf'
 ) {
-  // Derive the key using the password and salt
   const key = await deriveKey(password, saltBase64)
-
-  // Convert the Base64-encoded IV to a Uint8Array
   const iv = Uint8Array.from(atob(ivBase64), (c) => c.charCodeAt(0))
-
-  // Convert the encrypted Blob to an ArrayBuffer
   const encryptedBuffer = await encryptedBlob.arrayBuffer()
-
-  // Decrypt the file using AES-GCM
   let decryptedBuffer
   try {
     decryptedBuffer = await window.crypto.subtle.decrypt(
@@ -64,21 +68,19 @@ async function decryptFile(
   } catch (error) {
     throw new Error('Decryption failed. Please check your password.')
   }
-
-  // Return a Blob containing the decrypted data
   return new Blob([new Uint8Array(decryptedBuffer)], { type: mimeType })
 }
 
 const PublicFileAccess = () => {
-  const { public_token } = useParams() // Get the public token from the URL
+  const { public_token } = useParams()
   const [metadata, setMetadata] = useState(null)
   const [encryptedBlob, setEncryptedBlob] = useState(null)
   const [password, setPassword] = useState('')
-  // Instead of keeping the Blob, we will keep an object URL for the decrypted file.
   const [decryptedUrl, setDecryptedUrl] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const viewerRef = useRef(null)
+  const [scale, setScale] = useState(1.0)
 
   // Fetch file metadata and blob
   useEffect(() => {
@@ -95,14 +97,14 @@ const PublicFileAccess = () => {
         setEncryptedBlob(file.data)
         setLoading(false)
       } catch (err) {
-        setError(err.response?.data?.error || 'Failed to fetch file metadata.')
+        setError(err.response?.data?.error || 'URL does not exists')
         setLoading(false)
       }
     }
     fetchData()
   }, [public_token])
 
-  // Handle the decryption process when the user submits the password
+  // Handle decryption when the user submits the password
   const handleDecrypt = async (e) => {
     e.preventDefault()
     if (!encryptedBlob || !metadata || !password) {
@@ -117,67 +119,165 @@ const PublicFileAccess = () => {
         metadata.iv,
         metadata.mimeType || 'application/pdf'
       )
-      // Create an object URL from the decrypted Blob.
       const url = URL.createObjectURL(decryptedBlob)
-
       setDecryptedUrl(url)
-
       setError('')
     } catch (err) {
       setError(err.message)
     }
   }
 
-  if (loading) return <p>Loading file data...</p>
-  if (error && !decryptedUrl) return <p style={{ color: 'red' }}>{error}</p>
+  // Zoom control functions (for PDF preview only)
+  const zoomIn = () => setScale((prev) => Math.min(prev + 0.25, 3.0))
+  const zoomOut = () => setScale((prev) => Math.max(prev - 0.25, 0.5))
 
-  return (
-    <div>
-      <h2>File: {metadata ? metadata.file_name : 'Public File'}</h2>
-      {!decryptedUrl ? (
-        <form onSubmit={handleDecrypt}>
-          <label>
-            {decryptedUrl}
-            Enter Password to Decrypt:
-            <input
-              type='password'
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </label>
-          <button type='submit'>Decrypt File</button>
-        </form>
-      ) : (
-        <div
-          ref={viewerRef}
-          // Disable right-click and text selection on the viewer container
-          onContextMenu={(e) => e.preventDefault()}
-          style={{
-            position: 'relative',
-            userSelect: 'none',
-            WebkitUserSelect: 'none',
+  // Queue the download when the user clicks the download button
+  const handleDownload = () => {
+    const link = document.createElement('a')
+    link.href = decryptedUrl
+    link.download = metadata.file_name
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
+  if (loading) {
+    return (
+      <Container
+        sx={{
+          minHeight: '92vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'linear-gradient(135deg, #F5F7FA, #C3CFE2)',
+        }}
+      >
+        <CircularProgress />
+      </Container>
+    )
+  }
+
+  if (error && !decryptedUrl) {
+    return (
+      <LayoutWrapper>
+        <Container
+          sx={{
+            minHeight: '92vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'linear-gradient(135deg, #F5F7FA, #C3CFE2)',
           }}
         >
-          <h3>Decrypted File</h3>
-          <Document file={decryptedUrl} loading='Loading PDF...'>
-            <Page pageNumber={1} />
-          </Document>
-          {/* Optional overlay to block interactions */}
-          <div
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              background: 'transparent',
-              zIndex: 10,
-            }}
-          />
-        </div>
-      )}
-    </div>
+          <Typography variant='h6' color='error'>
+            {error}
+          </Typography>
+        </Container>
+      </LayoutWrapper>
+    )
+  }
+
+  return (
+    <LayoutWrapper>
+      <Container
+        sx={{
+          py: 4,
+          background: 'linear-gradient(135deg, #F5F7FA, #C3CFE2)',
+          minHeight: '92vh',
+          minWidth: '600px',
+          maxWidth: '100vh',
+        }}
+      >
+        <Paper elevation={3} sx={{ p: 4, mx: 'auto', width: 'max-content' }}>
+          <Typography variant='h4' gutterBottom>
+            File: {metadata ? metadata.file_name : 'Public File'}
+          </Typography>
+          {!decryptedUrl ? (
+            <Box component='form' onSubmit={handleDecrypt} sx={{ mt: 2 }}>
+              <TextField
+                label='Enter Password to Decrypt'
+                type='password'
+                fullWidth
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                sx={{ mb: 2 }}
+              />
+              <Button variant='contained' color='primary' type='submit'>
+                Decrypt File
+              </Button>
+              {error && (
+                <Typography variant='body2' color='error' sx={{ mt: 2 }}>
+                  {error}
+                </Typography>
+              )}
+            </Box>
+          ) : (
+            <Box
+              ref={viewerRef}
+              sx={{
+                mt: 2,
+                position: 'relative',
+                userSelect: 'none',
+                WebkitUserSelect: 'none',
+              }}
+            >
+              <Typography variant='h5' gutterBottom>
+                Decrypted File Preview
+              </Typography>
+              {metadata.mimeType === 'application/pdf' ? (
+                <>
+                  <Stack
+                    direction='row'
+                    spacing={2}
+                    alignItems='center'
+                    sx={{ mb: 2 }}
+                  >
+                    <Button variant='outlined' onClick={zoomOut}>
+                      Zoom Out
+                    </Button>
+                    <Button variant='outlined' onClick={zoomIn}>
+                      Zoom In
+                    </Button>
+                    <Typography variant='body2'>
+                      Scale: {scale.toFixed(2)}
+                    </Typography>
+                    <Button
+                      variant='contained'
+                      color='secondary'
+                      onClick={handleDownload}
+                    >
+                      Download File
+                    </Button>
+                  </Stack>
+                  <iframe src={decryptedUrl}>
+                    {/* <Document file={decryptedUrl} loading='Loading PDF...'>
+                    <Page pageNumber={1} scale={scale} />
+                    </Document> */}
+                  </iframe>
+                </>
+              ) : (
+                <>
+                  <Typography variant='body1'>
+                    Preview not available for this file type.
+                  </Typography>
+                  <Button
+                    variant='contained'
+                    color='secondary'
+                    component='a'
+                    href={decryptedUrl}
+                    download={metadata.file_name}
+                  >
+                    Download File
+                  </Button>
+                </>
+              )}
+              <Box sx={{ mt: 3 }}></Box>
+            </Box>
+          )}
+        </Paper>
+      </Container>
+    </LayoutWrapper>
   )
 }
 

@@ -151,6 +151,7 @@ CSRF_TRUSTED_ORIGINS = [
     "https://localhost:3000",
     "https://127.0.0.1:3000",
     "https://127.0.0.1:8000",
+    "https://localhost:8000",
 ]
 
 # CORS_ALLOW_HEADERS = [
@@ -158,10 +159,10 @@ CSRF_TRUSTED_ORIGINS = [
 #     'access-control-allow-credentials',
 # ]
 
-SESSION_COOKIE_SECURE = False  # Set to True in production (HTTPS)
-CSRF_COOKIE_SECURE = False  # Set to True in production
-SESSION_COOKIE_HTTPONLY = True
-CSRF_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SECURE = True  # Set to True in production (HTTPS)
+CSRF_COOKIE_SECURE = True  # Set to True in production
+SESSION_COOKIE_HTTPONLY = False
+CSRF_COOKIE_HTTPONLY = False
 SESSION_COOKIE_SAMESITE = "None"  # Use "None" if accessing from different domains
 CSRF_COOKIE_SAMESITE = "None"
 

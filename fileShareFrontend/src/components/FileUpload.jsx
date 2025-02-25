@@ -2,8 +2,22 @@ import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchFiles, uploadFile } from '../store/reducers/fileReducer'
 import api from '../store/api'
+import {
+  Container,
+  Paper,
+  Box,
+  Typography,
+  TextField,
+  Button,
+  CircularProgress,
+  List,
+  ListItem,
+  ListItemText,
+  Link as MuiLink,
+} from '@mui/material'
+import { Link as RouterLink } from 'react-router-dom'
 
-// Utility function to derive an AES-GCM key from a password using PBKDF2
+/* Utility function to derive an AES-GCM key from a password using PBKDF2 */
 async function deriveKey(password, salt) {
   const encoder = new TextEncoder()
   const keyMaterial = await window.crypto.subtle.importKey(
@@ -27,62 +41,57 @@ async function deriveKey(password, salt) {
   )
 }
 
-// Utility function to encrypt a file (as a Blob) using AES-GCM
+/* Utility function to encrypt a file (as a Blob) using AES-GCM */
 async function encryptFile(file, password) {
   const salt = window.crypto.getRandomValues(new Uint8Array(16))
-
   const key = await deriveKey(password, salt)
-
   const iv = window.crypto.getRandomValues(new Uint8Array(12))
-
   const fileBuffer = await file.arrayBuffer()
-
   const encryptedBuffer = await window.crypto.subtle.encrypt(
     { name: 'AES-GCM', iv },
     key,
     fileBuffer
   )
-
   // Create a Blob from the encrypted data (preserve file type)
   const encryptedBlob = new Blob([new Uint8Array(encryptedBuffer)], {
     type: file.type,
   })
-
   // Convert salt and iv to Base64 strings so they can be sent in FormData
   const saltBase64 = btoa(String.fromCharCode(...salt))
   const ivBase64 = btoa(String.fromCharCode(...iv))
-
   return { encryptedBlob, saltBase64, ivBase64 }
 }
 
 const FileUpload = () => {
   const [file, setFile] = useState(null)
-  const [password, setPassword] = useState('') // New state for password
+  const [password, setPassword] = useState('') // for encryption password
+  const [publicLink, setPublicLink] = useState('')
+  const [showCopy, setShowCopy] = useState([])
+
   const dispatch = useDispatch()
   const { loading, error, files } = useSelector((state) => state.file)
   const { user, email } = useSelector((state) => state.auth)
-  const [publicLink, setPublicLink] = useState('')
-  const [showCopy, setShowCopy] = useState([])
+
+  // Handle file input change
   const onFileChange = (e) => {
     setFile(e.target.files[0])
   }
-
+  // Handle encryption password change
   const onPasswordChange = (e) => {
     setPassword(e.target.value)
   }
 
+  // Handle file upload with encryption
   const onUpload = async () => {
     if (!file || !password) {
       alert('Please select a file and enter a password.')
       return
     }
-
     try {
       const { encryptedBlob, saltBase64, ivBase64 } = await encryptFile(
         file,
         password
       )
-
       dispatch(
         uploadFile({
           file: encryptedBlob,
@@ -95,18 +104,19 @@ const FileUpload = () => {
       console.error('Encryption failed:', err)
     }
   }
+
+  // Generate one time public link for a file
   const generatePublicLink = async (fileId) => {
     try {
       const response = await api.post(`files/${fileId}/share/`)
-
       setPublicLink(response.data.public_url)
-      setShowCopy((prev) => {
-        return [...prev, fileId]
-      })
+      setShowCopy((prev) => [...prev, fileId])
     } catch (err) {
       console.error(err)
     }
   }
+
+  // Copy the public link to clipboard
   const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(
@@ -116,56 +126,135 @@ const FileUpload = () => {
       console.error('Failed to copy: ', err)
     }
   }
-  // Fetch files on mount (if needed)
+
+  // Fetch files on mount
   useEffect(() => {
     dispatch(fetchFiles())
   }, [dispatch])
 
-  if (user || email) {
-    return (
-      <div>
-        <h2>Upload File</h2>
-        <input type='file' onChange={onFileChange} />
-        <input
-          type='password'
-          placeholder='Enter encryption password'
-          value={password}
-          onChange={onPasswordChange}
-        />
-        <button onClick={onUpload} disabled={loading}>
-          {loading ? 'Uploading...' : 'Upload'}
-        </button>
-        {error && <div style={{ color: 'red' }}>Error: {error}</div>}
-        <div>
-          <h3>Uploaded Files:</h3>
-          <ul
-            style={{
+  // Only render for authenticated users
+  if (!(user || email)) {
+    return null
+  }
+  console.log(user, email, files)
+  return (
+    <Box
+      sx={{
+        minHeight: '92vh',
+        minWidth: '600px',
+        width: '100%',
+        background: 'linear-gradient(135deg, #F5F7FA, #C3CFE2)',
+        p: 2,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        maxWidth: 'unset',
+      }}
+      style={{ width: '100%' }}
+    >
+      <Container style={{ minWidth: 'max-content' }}>
+        <Paper
+          elevation={3}
+          sx={{
+            p: 4,
+            border: '2px solid #1976d2',
+            borderRadius: '12px',
+          }}
+          style={{ minWidth: '400px' }}
+        >
+          <Typography variant='h4' align='center' gutterBottom>
+            Upload File
+          </Typography>
+          <Box
+            sx={{
               display: 'flex',
               flexDirection: 'column',
-              alignItems: 'center',
-              padding: 0,
-              margin: 0,
+              gap: 2,
+              mb: 3,
             }}
           >
-            {files.map((file, index) => (
-              <>
-                <a key={index} href={`/files/${file.id}`}>
-                  {file.file_name}
-                </a>
-                <button onClick={() => generatePublicLink(file.id)}>
-                  Create one time public link
-                </button>
-                {showCopy.includes(file.id) && (
-                  <button onClick={copyToClipboard}>Copy to clipboard</button>
-                )}
-              </>
-            ))}
-          </ul>
-        </div>
-      </div>
-    )
-  }
-  return null
+            {/* File input using a styled Button */}
+            <Button variant='contained' component='label'>
+              {file ? `File Selected: ${file.name}` : 'Choose File'}
+              <input type='file' hidden onChange={onFileChange} />
+            </Button>
+            <TextField
+              label='Encryption Password'
+              type='password'
+              variant='outlined'
+              fullWidth
+              value={password}
+              onChange={onPasswordChange}
+              required
+            />
+            <Button
+              variant='contained'
+              color='primary'
+              onClick={onUpload}
+              disabled={loading}
+              sx={{ py: 1.5 }}
+            >
+              {loading ? (
+                <CircularProgress size={24} color='inherit' />
+              ) : (
+                'Upload'
+              )}
+            </Button>
+            {error && (
+              <Typography variant='body2' color='error'>
+                Error: {error}
+              </Typography>
+            )}
+          </Box>
+          <Typography variant='h5' gutterBottom>
+            Uploaded Files:
+          </Typography>
+          {files && files.length > 0 ? (
+            <List>
+              {files.map((file) => (
+                <ListItem key={file.id} divider>
+                  <ListItemText
+                    primary={
+                      <MuiLink
+                        component={RouterLink}
+                        to={`/files/${file.id}`}
+                        underline='hover'
+                        style={{ marginRight: '8px' }}
+                      >
+                        {file.file_name}
+                      </MuiLink>
+                    }
+                  />
+                  <Box
+                    sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}
+                  >
+                    <Button
+                      variant='outlined'
+                      size='small'
+                      onClick={() => generatePublicLink(file.id)}
+                    >
+                      Share file with a time public link
+                    </Button>
+                    {showCopy.includes(file.id) && (
+                      <Button
+                        variant='outlined'
+                        size='small'
+                        onClick={copyToClipboard}
+                      >
+                        Copy to clipboard
+                      </Button>
+                    )}
+                  </Box>
+                </ListItem>
+              ))}
+            </List>
+          ) : (
+            <Typography variant='body1'>No files uploaded yet.</Typography>
+          )}
+        </Paper>
+      </Container>
+    </Box>
+  )
 }
 
 export default FileUpload

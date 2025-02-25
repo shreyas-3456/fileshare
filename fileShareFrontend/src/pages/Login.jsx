@@ -1,8 +1,17 @@
 import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { login } from '../store/reducers/userReducer' // Your login thunk
+import { login } from '../store/reducers/userReducer'
 import { Link, useNavigate } from 'react-router-dom'
-import LayoutWrapper from '../components/LayoutWrapper'
+import {
+  Container,
+  Paper,
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Link as MuiLink,
+  CircularProgress,
+} from '@mui/material'
 
 const Login = () => {
   const [username, setUsername] = useState('')
@@ -16,20 +25,17 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    // Dispatch login action with username, password and (if available) MFA code
     if (!reciveCode) {
-      // First phase: send without MFA code.
       dispatch(login({ username, password })).then((action) => {
         if (action.meta.requestStatus === 'fulfilled') {
-          action.payload.message &&
-            action.payload.message.toLowerCase().includes('mfa code sent')
+          // Optionally, handle MFA code flow trigger here if needed.
         }
       })
     } else {
       dispatch(login({ username, password, email_code: mfaCode })).then(
         (action) => {
           if (action.meta.requestStatus === 'fulfilled') {
-            setTimeout(() => navigate('/'), 100)
+            setTimeout(() => navigate('/'), 300)
           }
         }
       )
@@ -37,49 +43,76 @@ const Login = () => {
   }
 
   return (
-    <LayoutWrapper>
-      <h2>Login Page</h2>
-      <Link to={'/register'}>Not a user ? Register here </Link>
-      <form onSubmit={handleSubmit}>
-        {!reciveCode && (
-          <>
-            <div>
-              <input
-                type='text'
-                placeholder='Username'
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+    <Container maxWidth='sm'>
+      <Paper elevation={3} sx={{ p: 4, mt: 8 }}>
+        <Typography variant='h4' align='center' gutterBottom>
+          Login
+        </Typography>
+        <Box display='flex' justifyContent='center' mb={2}>
+          <MuiLink component={Link} to='/register' underline='hover'>
+            Not a user? Register here.
+          </MuiLink>
+        </Box>
+        <form onSubmit={handleSubmit}>
+          <Box display='flex' flexDirection='column' gap={2}>
+            {!reciveCode ? (
+              <>
+                <TextField
+                  label='Username'
+                  variant='outlined'
+                  fullWidth
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                />
+                <TextField
+                  label='Password'
+                  variant='outlined'
+                  type='password'
+                  fullWidth
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </>
+            ) : (
+              <TextField
+                label='Enter MFA Code'
+                variant='outlined'
+                fullWidth
+                value={mfaCode}
+                onChange={(e) => setMfaCode(e.target.value)}
                 required
               />
-            </div>
-            <div>
-              <input
-                type='password'
-                placeholder='Password'
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-          </>
+            )}
+            <Button
+              type='submit'
+              variant='contained'
+              color='primary'
+              fullWidth
+              sx={{ py: 1.5 }}
+              disabled={loading}
+            >
+              {loading ? (
+                <CircularProgress size={24} color='inherit' />
+              ) : (
+                'Login'
+              )}
+            </Button>
+          </Box>
+        </form>
+        {error && (
+          <Typography
+            variant='body2'
+            color='error'
+            align='center'
+            sx={{ mt: 2 }}
+          >
+            {error.error || error}
+          </Typography>
         )}
-        {reciveCode && (
-          <div>
-            <input
-              type='text'
-              placeholder='Enter MFA Code'
-              value={mfaCode}
-              onChange={(e) => setMfaCode(e.target.value)}
-              required
-            />
-          </div>
-        )}
-        <button type='submit' disabled={loading}>
-          {loading ? 'Processing...' : 'Login'}
-        </button>
-      </form>
-      {error && <p style={{ color: 'red' }}>{error.error || error}</p>}
-    </LayoutWrapper>
+      </Paper>
+    </Container>
   )
 }
 

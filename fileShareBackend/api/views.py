@@ -86,9 +86,9 @@ class LoginView(APIView):
             return Response({"error": "Invalid credentials"},
                             status=status.HTTP_401_UNAUTHORIZED)
 
-        # Email-based MFA: We'll use email as the second factor.
-        # For simplicity, we assume all users have email MFA enabled.
-        # In a real app, you might check a user field (e.g., user.mfa_enabled)
+        # # Email-based MFA: We'll use email as the second factor.
+        # # For simplicity, we assume all users have email MFA enabled.
+        # # In a real app, you might check a user field (e.g., user.mfa_enabled)
         cache_key = f"mfa_code_{user.id}"
 
         # If no email_code provided, generate and send one.

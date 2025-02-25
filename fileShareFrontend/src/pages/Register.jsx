@@ -2,6 +2,15 @@ import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { register } from '../store/reducers/userReducer'
 import { useNavigate } from 'react-router-dom'
+import {
+  Container,
+  Paper,
+  Box,
+  Typography,
+  TextField,
+  Button,
+  CircularProgress,
+} from '@mui/material'
 
 const Register = () => {
   const [username, setUsername] = useState('')
@@ -9,17 +18,20 @@ const Register = () => {
   const [retypePassword, setRetypePassword] = useState('')
   const [email, setEmail] = useState('')
   const [passwordMismatch, setPasswordMismatch] = useState(false)
+
   const dispatch = useDispatch()
   const { loading, error } = useSelector((state) => state.auth)
   const navigate = useNavigate()
 
   const handleSubmit = (e) => {
     e.preventDefault()
+
     if (password !== retypePassword) {
       setPasswordMismatch(true)
       return
     }
     setPasswordMismatch(false)
+
     const userData = { username, password, email }
     dispatch(register(userData)).then((action) => {
       if (action.meta.requestStatus === 'fulfilled') {
@@ -29,42 +41,83 @@ const Register = () => {
   }
 
   return (
-    <div>
-      <h2>Register</h2>
-      <form onSubmit={handleSubmit} className='form'>
-        <input
-          type='text'
-          placeholder='Username'
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
-        <input
-          type='email'
-          placeholder='Email'
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <input
-          type='password'
-          placeholder='Password'
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <input
-          type='password'
-          placeholder='Retype Password'
-          value={retypePassword}
-          onChange={(e) => setRetypePassword(e.target.value)}
-        />
-        {passwordMismatch && (
-          <p style={{ color: 'red' }}>Passwords do not match.</p>
+    <Container maxWidth='sm'>
+      <Paper elevation={3} sx={{ p: 4, mt: 8 }}>
+        <Typography variant='h4' align='center' gutterBottom>
+          Register
+        </Typography>
+        <Box
+          component='form'
+          onSubmit={handleSubmit}
+          sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+        >
+          <TextField
+            label='Username'
+            variant='outlined'
+            fullWidth
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+          />
+          <TextField
+            label='Email'
+            variant='outlined'
+            type='email'
+            fullWidth
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <TextField
+            label='Password'
+            variant='outlined'
+            type='password'
+            fullWidth
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <TextField
+            label='Retype Password'
+            variant='outlined'
+            type='password'
+            fullWidth
+            value={retypePassword}
+            onChange={(e) => setRetypePassword(e.target.value)}
+            required
+          />
+          {passwordMismatch && (
+            <Typography variant='body2' color='error'>
+              Passwords do not match.
+            </Typography>
+          )}
+          <Button
+            type='submit'
+            variant='contained'
+            color='primary'
+            fullWidth
+            disabled={loading}
+            sx={{ py: 1.5 }}
+          >
+            {loading ? (
+              <CircularProgress size={24} color='inherit' />
+            ) : (
+              'Register'
+            )}
+          </Button>
+        </Box>
+        {error && (
+          <Typography
+            variant='body2'
+            color='error'
+            align='center'
+            sx={{ mt: 2 }}
+          >
+            {error.details || error}
+          </Typography>
         )}
-        <button type='submit' disabled={loading}>
-          {loading ? 'Registering...' : 'Register'}
-        </button>
-      </form>
-      {error && <p style={{ color: 'red' }}>{error.details}</p>}
-    </div>
+      </Paper>
+    </Container>
   )
 }
 
