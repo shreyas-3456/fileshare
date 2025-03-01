@@ -129,14 +129,16 @@ const FileUpload = () => {
 
   // Fetch files on mount
   useEffect(() => {
-    dispatch(fetchFiles())
-  }, [dispatch])
+    if (user || email) {
+      dispatch(fetchFiles())
+    }
+  }, [dispatch, user, email])
 
   // Only render for authenticated users
   if (!(user || email)) {
     return null
   }
-  console.log(user, email, files)
+
   return (
     <Box
       sx={{

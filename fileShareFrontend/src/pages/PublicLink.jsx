@@ -87,11 +87,11 @@ const PublicFileAccess = () => {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          `https://localhost:8000/api/public/files/${public_token}/metadata/`
+          `https://3.227.230.192/api/public/files/${public_token}/metadata/`
         )
         setMetadata(response.data)
         const file = await axios.get(
-          `https://localhost:8000/api/public/files/${public_token}/`,
+          `https://3.227.230.192/api/public/files/${public_token}/`,
           { responseType: 'blob' }
         )
         setEncryptedBlob(file.data)

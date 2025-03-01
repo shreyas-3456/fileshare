@@ -2,7 +2,7 @@ import axios from 'axios'
 // import store from '.store' // Import Redux store
 
 const api = axios.create({
-  baseURL: 'https://localhost:8000/api',
+  baseURL: 'https://3.227.230.192/api',
   withCredentials: true,
 })
 

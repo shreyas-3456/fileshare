@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-^-l7c^-v)157xev(99)uaf6u+ung_q@fyce6jjw@#63043z^4d
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -145,6 +145,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  # Vite default port
     "http://127.0.0.1:5173",
     "https://127.0.0.1:8000",
+    "http://localhost:8000",
+    "https://shreyas-fileshare.netlify.app",
 ]
 CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = [
@@ -152,6 +154,9 @@ CSRF_TRUSTED_ORIGINS = [
     "https://127.0.0.1:3000",
     "https://127.0.0.1:8000",
     "https://localhost:8000",
+    "http://localhost:8000",
+    "http://localhost:8080",
+    "https://shreyas-fileshare.netlify.app",
 ]
 
 # CORS_ALLOW_HEADERS = [

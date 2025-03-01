@@ -1,0 +1,6 @@
+.terraform
+.terraform.lock.hcl
+nginx-selfsigned.crt
+nginx-selfsigned.key
+terraform.tfstate.backup
+terraform.tfstate

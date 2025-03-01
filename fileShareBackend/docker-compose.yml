@@ -1,9 +1,37 @@
+version: '3.8'
+
+networks:
+  shared_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.1.0/24 # Define a subnet for static IP assignment
+
 services:
-  django-run:
-    image: django
+  nginx:
     build:
       context: .
-      dockerfile: ./Dockerfile
-    container_name: django
+      dockerfile: dockerfile.nginx
+    container_name: nginx_container
+    ports:
+      - '80:80'
+      - '443:443'
+    networks:
+      - shared_network # No static IP assigned
+    depends_on:
+      - django
+    restart: unless-stopped
+
+  django:
+    build:
+      context: .
+      dockerfile: dockerfile.django_prod
+    container_name: django_container
     ports:
       - '8000:8000'
+    environment:
+      - DEBUG=False
+    networks:
+      shared_network:
+        ipv4_address: 192.168.1.101 # Static IP for Django
+    restart: unless-stopped
