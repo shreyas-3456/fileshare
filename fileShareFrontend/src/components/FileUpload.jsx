@@ -16,6 +16,7 @@ import {
   Link as MuiLink,
 } from '@mui/material'
 import { Link as RouterLink } from 'react-router-dom'
+import WebsiteInfo from './WebsiteInfo'
 
 /* Utility function to derive an AES-GCM key from a password using PBKDF2 */
 async function deriveKey(password, salt) {
@@ -136,7 +137,7 @@ const FileUpload = () => {
 
   // Only render for authenticated users
   if (!(user || email)) {
-    return null
+    return <WebsiteInfo />
   }
 
   return (
